@@ -16,7 +16,7 @@ type Singularity struct {
 	sync.Mutex
 	Teams    []SlackInstance
 	shutdown chan int
-	log      func(message string, i ...interface{})
+	log      func(level int, message string, i ...interface{})
 }
 
 //Shutdown leaves everything. It blocks as each team has to quit.
