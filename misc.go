@@ -1,41 +1,29 @@
 package singularity
 
-import "encoding/json"
+import "strings"
 
-//Not to be confused with slack.Message
-type Message struct {
-	Body interface{} //ByteForm please.
-}
-
-func (message *Message) GetBytes() ([]byte, error) {
-	switch s := message.Body.(type) {
-	case []byte:
-		return s, nil
-	default:
-		return json.Marshal(s)
-
+func getFunctionParameters(function string) []string {
+	if function == "" {
+		return []string{} //Empty string because nils are mean.
 	}
-}
-
-func (message *Message) GetInterface() (interface{}, error) {
-	switch s := message.Body.(type) {
-	case []byte:
-		var i interface{}
-		err := json.Unmarshal(s, &i)
-		return i, err
-	default:
-		return s, nil
+	start := 0
+	end := 1
+	for ii, char := range function {
+		if char == '(' {
+			start = ii
+		}
+		if char == ')' {
+			end = ii
+			break //Need to break or else it might process return values
+		}
 	}
+	return strings.Split(function[start+1:end], ", ")
 }
 
 //TODO json validation.
 //WARNING Not safe.
-func (message *Message) preParseString(key string) string {
+func preParseString(key string, body []byte) string {
 	var buffer []byte
-	body, ok := message.Body.([]byte) //FIXME Make this an actual thing
-	if !ok {
-		return ""
-	}
 	qO := false   //quoteOpen
 	eonf := false //end on next flush
 	escaped := false

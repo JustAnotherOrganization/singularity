@@ -4,7 +4,7 @@ import "fmt"
 
 //Log is used to log.
 func (singularity *Singularity) Log(level int, message string, i ...interface{}) {
-	singularity.log(message, i...)
+	singularity.log(level, message, i...)
 }
 
 //SetLogger ...
