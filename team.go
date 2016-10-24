@@ -9,14 +9,15 @@ import (
 //SlackInstance ...
 type SlackInstance struct {
 	RTMResp
-	handlers    *EventAPIHandler
-	Name        string
-	singularity *Singularity
-	input       chan Message
-	output      chan Message
-	quit        chan int
-	connection  *websocket.Conn
-	Commands    CommandHandler
+	handlers      *EventAPIHandler
+	Name          string
+	singularity   *Singularity
+	input         chan Message
+	output        chan Message
+	quit          chan int
+	connection    *websocket.Conn
+	Commands      CommandHandler
+	Configuration Configuration
 }
 
 //Quit ...
@@ -39,6 +40,7 @@ func (singularity *Singularity) addTeam(connection *websocket.Conn, response RTM
 	instance.singularity = singularity //Set reference.
 	instance.RTMResp = response
 	instance.Name = response.Team.Name
+	instance.Configuration = defaultConfig{config: make(map[string]interface{})} //TODO move outside. configs should be configured before a team is started.
 
 	instance.handlers = NewHandler1()
 	addDefaultHandlers(&instance)
@@ -133,4 +135,8 @@ func (instance *SlackInstance) RegisterHandler(key string, handler interface{}) 
 	instance.handlers.Lock()
 	defer instance.handlers.Unlock()
 	return instance.handlers.registerHandler(key, handler)
+}
+
+func (instance *SlackInstance) RegisterCommand(command string, commandHandler func(Command)) error {
+	return instance.Commands.registerCommand(command, commandHandler)
 }

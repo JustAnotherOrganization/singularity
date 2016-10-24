@@ -1,7 +1,6 @@
 package singularity
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/JustAnotherOrganization/singularity/slacktypes"
@@ -37,15 +36,14 @@ func HandleCommands(message slacktypes.Message, instance *SlackInstance) {
 	if message.SubType != "message_deleted" { //If it isn't deleted
 		if message.User != instance.Self.ID { //If it isn't me
 			cmds := strings.Split(message.Text, " ")
-			//If is command.
-			cmd := "getCommand()"
-			if len(cmds) > 1 {
-				cmds = cmds[1:] //sl[:len(sl)-1]
-			} else {
-				cmds = []string{}
+			if len(cmds) > 0 {
+				cmd := cmds[0]
+				if instance.Commands.IsCommand(cmd) {
+					cmds = cmds[1:]
+					c := Command{Command: cmd, Args: cmds, Instance: instance}
+					instance.Commands.execute(c)
+				}
 			}
-			c := Command{Command: cmd, Args: cmds, Instance: instance}
-			fmt.Println(c)
 		}
 	}
 }
