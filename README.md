@@ -2,6 +2,25 @@
 
 A Simple Slack Client/Framework in golang. Allows you to easily hook up commands and event listeners, or will at some point. Right now it is in progress! Nothing really here but the writings of a mad man.
 
+## Building and using   
+As of writing this...   
+`go get github.com/JustAnotherOrganization/singularity`   
+``` Go
+package main
+
+import "github.com/JustAnotherOrganization/singularity"
+
+func main() {
+	s := singularity.NewSingularity()
+
+	s.ConnectToTeam("mySlackToken")
+
+	s.WaitForShutdown()
+}
+```
+
+As we add more features, more documentation will appear.
+
 ## Contributing  
 If you'd like to contribute, feel free and welcome to fork this project and open a PullRequest. 
 
