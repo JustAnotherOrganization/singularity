@@ -2,7 +2,6 @@ package singularity
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"golang.org/x/net/websocket"
@@ -26,7 +25,6 @@ func (singularity *Singularity) ConnectToTeam(token string) (*SlackInstance, err
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("29")
 	return singularity.addTeam(conn, response)
 }
 

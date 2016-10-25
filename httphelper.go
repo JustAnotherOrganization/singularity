@@ -9,6 +9,7 @@ import (
 	"net/url"
 )
 
+//HTTPHelper helps with HTTP Calls.
 type HTTPHelper struct {
 	Client    *http.Client
 	Transport string
