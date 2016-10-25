@@ -15,6 +15,11 @@ type CommandHandler struct {
 	handlers map[string]func(Command)
 }
 
+//NewCommandHandler returns a new command handler
+func NewCommandHandler() *CommandHandler {
+	return &CommandHandler{handlers: make(map[string]func(Command))}
+}
+
 // Command type
 type Command struct {
 	Command  string

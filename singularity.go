@@ -49,6 +49,6 @@ func (singularity *Singularity) HardShutdown() {
 }
 
 //WaitForShutdown blocks until shutdown.
-func (singularity *Singularity) WaitForShutdown() <-chan int {
-	return singularity.shutdown
+func (singularity *Singularity) WaitForShutdown() int {
+	return <-singularity.shutdown
 }

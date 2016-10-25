@@ -58,10 +58,9 @@ func (singularity *Singularity) NewTeam(Token string) *SlackInstance {
 	//Configuration
 	instance.Configuration = defaultConfig{config: make(map[string]interface{})} //TODO move outside. configs should be configured before a team is started.
 	//defaulthandlers
+	instance.Commands = NewCommandHandler()
 	instance.handlers = NewHandler1()
 	addDefaultHandlers(instance)
-
-	instance.Commands.handlers = make(map[string]func(Command))
 
 	singularity.Teams = append(singularity.Teams, *instance)
 	return instance
@@ -69,7 +68,7 @@ func (singularity *Singularity) NewTeam(Token string) *SlackInstance {
 
 //Start starts the slack instance.
 func (instance *SlackInstance) Start() error {
-	helper := HTTPHelper{Client: &http.Client{Transport: instance.transport}, Transport: "https://"} //TODO Don't hard code this.
+	helper := HTTPHelper{Client: &http.Client{}, Transport: "https://"} //TODO Don't hard code this.
 	_, err := helper.post("rtm.start", &instance.RTMResp, "token", instance.token)
 	if err != nil {
 		return err
@@ -234,6 +233,6 @@ func (instance *SlackInstance) SetHTTPTransport(transport *http.Transport) {
 }
 
 //WaitForEnd will wait until the team is killed or stopped.
-func (instance *SlackInstance) WaitForEnd() <-chan int {
-	return instance.quit
+func (instance *SlackInstance) WaitForEnd() int {
+	return <-instance.quit
 }
