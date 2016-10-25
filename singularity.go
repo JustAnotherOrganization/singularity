@@ -32,21 +32,15 @@ func (singularity *Singularity) Shutdown() {
 }
 
 //RemoveTeam ...
-func (singularity *Singularity) RemoveTeam(name string) {
+func (singularity *Singularity) RemoveTeam(token string) {
 	singularity.Lock()
 	defer singularity.Unlock()
 	for i := 0; i < len(singularity.Teams); i++ { //a[:i], a[i+1:]...
-		if singularity.Teams[i].Name == name {
+		if singularity.Teams[i].token == token {
 			singularity.Teams = append(singularity.Teams[:i], singularity.Teams[i+1:]...)
 			i--
 		}
 	}
-}
-
-//JoinTeam ...
-func (singularity *Singularity) JoinTeam() {
-	singularity.Lock()
-	defer singularity.Unlock()
 }
 
 //HardShutdown doesn't go to each team's shutdown.
@@ -55,6 +49,6 @@ func (singularity *Singularity) HardShutdown() {
 }
 
 //WaitForShutdown blocks until shutdown.
-func (singularity *Singularity) WaitForShutdown() {
-	<-singularity.shutdown
+func (singularity *Singularity) WaitForShutdown() <-chan int {
+	return singularity.shutdown
 }

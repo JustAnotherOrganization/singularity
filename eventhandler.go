@@ -9,12 +9,14 @@ import (
 	"sync"
 )
 
+//NewHandler1 ...
 func NewHandler1() *EventAPIHandler {
 	eapih := &EventAPIHandler{}
 	eapih.handlers = make(map[string][]interface{})
 	return eapih
 }
 
+//EventAPIHandler ...
 type EventAPIHandler struct {
 	sync.Mutex
 	handlerList

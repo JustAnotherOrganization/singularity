@@ -1,7 +1,9 @@
 package singularity
 
 import (
+	"errors"
 	"fmt"
+	"net/http"
 
 	"golang.org/x/net/websocket"
 )
@@ -9,15 +11,31 @@ import (
 //SlackInstance ...
 type SlackInstance struct {
 	RTMResp
-	handlers      *EventAPIHandler
-	Name          string
-	singularity   *Singularity
-	input         chan Message
-	output        chan Message
-	quit          chan int
-	connection    *websocket.Conn
-	Commands      CommandHandler
+
+	//Important Data Stuff
+	singularity *Singularity
+	connection  *websocket.Conn
+
+	//Handlers
+	Commands               *CommandHandler
+	handlers               *EventAPIHandler
+	customEventHandler     func()
+	customCommandHandler   func()
+	customWebsocketHandler func()
+
+	//Friendly name
+	Name string
+
+	//Token
+	token string
+
+	input  chan Message //input represents what comes from slack
+	output chan Message //output goes to slack
+	quit   chan int
+
+	//Configuration
 	Configuration Configuration
+	transport     *http.Transport
 }
 
 //Quit ...
@@ -30,6 +48,72 @@ func (instance *SlackInstance) Quit() {
 //Please dont call this outside of Singularity::Shutdown
 func (instance *SlackInstance) quitShutdown() {
 	instance.quit <- 0
+}
+
+//NewTeam creates a new team, that isn't started. To start a team, you'll need to call the Start function on it.
+func (singularity *Singularity) NewTeam(Token string) *SlackInstance {
+	singularity.Lock()
+	defer singularity.Unlock()
+	instance := &SlackInstance{token: Token, singularity: singularity}
+	//Configuration
+	instance.Configuration = defaultConfig{config: make(map[string]interface{})} //TODO move outside. configs should be configured before a team is started.
+	//defaulthandlers
+	instance.handlers = NewHandler1()
+	addDefaultHandlers(instance)
+
+	instance.Commands.handlers = make(map[string]func(Command))
+
+	singularity.Teams = append(singularity.Teams, *instance)
+	return instance
+}
+
+//Start starts the slack instance.
+func (instance *SlackInstance) Start() error {
+	helper := HTTPHelper{Client: &http.Client{Transport: instance.transport}, Transport: "https://"} //TODO Don't hard code this.
+	_, err := helper.post("rtm.start", &instance.RTMResp, "token", instance.token)
+	if err != nil {
+		return err
+	}
+
+	//Connect to websocket.
+	//TODO Support custom proxies?
+	instance.connection, err = websocket.Dial(instance.RTMResp.URL, "", "http://api.slack.com") //TODO Don't hard code here.
+	if err != nil {
+		return err
+	}
+	var hello struct {
+		Hello string `json:"type"`
+	}
+	err = websocket.JSON.Receive(instance.connection, &hello)
+	if err != nil {
+		return err
+	}
+	if hello.Hello != "hello" {
+		return errors.New("Slack did not respond with the correct message")
+	}
+	instance.Name = instance.RTMResp.Team.Name
+
+	//Channels for this Instance.
+	instance.input = make(chan Message, 5)  //TODO Configure Amount
+	instance.output = make(chan Message, 5) //TODO Configure Amount
+	instance.quit = make(chan int)
+	//WebsocketChannel
+	// instance.connection = connection
+
+	//Start Go-Routines for handling the things.
+	if instance.customEventHandler != nil {
+		go instance.customEventHandler()
+	} else {
+		go instance.handleChans()
+	}
+
+	if instance.customWebsocketHandler != nil {
+		go instance.customWebsocketHandler()
+	} else {
+		go instance.handleWebsocket()
+	}
+
+	return nil
 }
 
 func (singularity *Singularity) addTeam(connection *websocket.Conn, response RTMResp) (*SlackInstance, error) {
@@ -118,6 +202,18 @@ func (instance *SlackInstance) handleWebsocket() {
 	}
 }
 
+//RegisterCommand ...
+func (instance *SlackInstance) RegisterCommand(command string, commandHandler func(Command)) error {
+	return instance.Commands.registerCommand(command, commandHandler)
+}
+
+//RegisterHandler ...
+func (instance *SlackInstance) RegisterHandler(key string, handler interface{}) error {
+	instance.handlers.Lock()
+	defer instance.handlers.Unlock()
+	return instance.handlers.registerHandler(key, handler)
+}
+
 //RegisterHandlers will allow you to handle the events.
 func (instance *SlackInstance) RegisterHandlers(handlers map[string][]interface{}) error {
 	instance.handlers.Lock()
@@ -132,12 +228,12 @@ func (instance *SlackInstance) RegisterHandlers(handlers map[string][]interface{
 	return nil
 }
 
-func (instance *SlackInstance) RegisterHandler(key string, handler interface{}) error {
-	instance.handlers.Lock()
-	defer instance.handlers.Unlock()
-	return instance.handlers.registerHandler(key, handler)
+//SetHTTPTransport allows you to set a transport to use when communicate with Slack.
+func (instance *SlackInstance) SetHTTPTransport(transport *http.Transport) {
+	instance.transport = transport
 }
 
-func (instance *SlackInstance) RegisterCommand(command string, commandHandler func(Command)) error {
-	return instance.Commands.registerCommand(command, commandHandler)
+//WaitForEnd will wait until the team is killed or stopped.
+func (instance *SlackInstance) WaitForEnd() <-chan int {
+	return instance.quit
 }

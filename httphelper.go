@@ -3,7 +3,6 @@ package singularity
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -46,7 +45,6 @@ func (helper *HTTPHelper) post(path string, response interface{}, i ...string) (
 func stringsToValues(values ...string) url.Values {
 	rValues := make(url.Values)
 	if len(values)%2 != 0 {
-		fmt.Println("Uneven")
 		values = values[:len(values)-1] //Must be even.
 	}
 	for i := 0; i < len(values); i++ {

@@ -2,11 +2,12 @@ package singularity
 
 import "encoding/json"
 
-//Not to be confused with slack.Message
+//Message Not to be confused with slack.Message
 type Message struct {
 	Body interface{} //ByteForm please.
 }
 
+//GetBytes ...
 func (message *Message) GetBytes() ([]byte, error) {
 	switch s := message.Body.(type) {
 	case []byte:
@@ -17,6 +18,7 @@ func (message *Message) GetBytes() ([]byte, error) {
 	}
 }
 
+//GetInterface ...
 func (message *Message) GetInterface() (interface{}, error) {
 	switch s := message.Body.(type) {
 	case []byte:
