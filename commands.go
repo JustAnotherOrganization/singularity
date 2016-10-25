@@ -6,11 +6,15 @@ import (
 	"sync"
 )
 
+// CommandHandler holds command handlers
+// mutex for locking when adding handlers
+// handlers is a map holding all CommandHandlers
 type CommandHandler struct {
 	sync.Mutex
 	handlers map[string]func(Command)
 }
 
+// Command type
 type Command struct {
 	Command  string
 	Args     []string
@@ -39,6 +43,7 @@ func (commandHandler *CommandHandler) execute(command Command) error {
 	return nil
 }
 
+// IsCommand check if we have a handler for this command
 func (commandHandler *CommandHandler) IsCommand(command string) bool {
 	commandHandler.Lock()
 	defer commandHandler.Unlock()
