@@ -41,6 +41,7 @@ func (singularity *Singularity) addTeam(connection *websocket.Conn, response RTM
 	instance.RTMResp = response
 	instance.Name = response.Team.Name
 	instance.Configuration = defaultConfig{config: make(map[string]interface{})} //TODO move outside. configs should be configured before a team is started.
+	instance.Commands.handlers = make(map[string]func(Command))
 
 	instance.handlers = NewHandler1()
 	addDefaultHandlers(&instance)

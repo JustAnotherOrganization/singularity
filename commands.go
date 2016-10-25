@@ -2,6 +2,7 @@ package singularity
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"sync"
 )
@@ -47,12 +48,14 @@ func (commandHandler *CommandHandler) execute(command Command) error {
 func (commandHandler *CommandHandler) IsCommand(command string) bool {
 	commandHandler.Lock()
 	defer commandHandler.Unlock()
-
+	fmt.Println(commandHandler.handlers)
 	_, ok := commandHandler.handlers[strings.ToLower(command)]
+	fmt.Println(ok)
 	return ok
 }
 
 func (commandHandler *CommandHandler) registerCommand(command string, function func(Command)) error {
+
 	commandHandler.Lock()
 	defer commandHandler.Unlock()
 
@@ -61,5 +64,6 @@ func (commandHandler *CommandHandler) registerCommand(command string, function f
 	}
 
 	commandHandler.handlers[strings.ToLower(command)] = function
+	fmt.Println(commandHandler.handlers)
 	return nil
 }
