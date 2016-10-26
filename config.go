@@ -2,6 +2,7 @@ package singularity
 
 import "sync"
 
+//Configuration interface for getting config values
 type Configuration interface {
 	GetBool(string) bool
 	CheckBool(string) (bool, bool)
@@ -10,7 +11,7 @@ type Configuration interface {
 }
 
 type defaultConfig struct {
-	sync.Mutex
+	*sync.Mutex
 	config map[string]interface{}
 }
 
