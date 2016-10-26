@@ -31,9 +31,8 @@ type handlerList struct {
 One of the things that I'm thinking about, is requiting a naming convention for finding the `type`
 */
 
+//WARNING, does not lock.
 func (handler *EventAPIHandler) registerHandler(key string, function interface{}) error {
-	handler.handlerList.Lock()
-	defer handler.handlerList.Unlock()
 	if function == nil {
 		return errors.New("Function can not be nul!")
 	}

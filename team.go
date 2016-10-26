@@ -22,6 +22,7 @@ type SlackInstance struct {
 	customEventHandler     func()
 	customCommandHandler   func()
 	customWebsocketHandler func()
+	log                    func(level int, message string, i ...interface{})
 
 	//Friendly name
 	Name string
@@ -59,9 +60,10 @@ func (singularity *Singularity) NewTeam(Token string) *SlackInstance {
 	instance.Configuration = defaultConfig{config: make(map[string]interface{})} //TODO move outside. configs should be configured before a team is started.
 	//defaulthandlers
 	instance.Commands = NewCommandHandler()
+	instance.Commands.setPrefix(".")
+	addDefaultCommands(instance)
 	instance.handlers = NewHandler1()
 	addDefaultHandlers(instance)
-
 	singularity.Teams = append(singularity.Teams, *instance)
 	return instance
 }
@@ -91,13 +93,15 @@ func (instance *SlackInstance) Start() error {
 		return errors.New("Slack did not respond with the correct message")
 	}
 	instance.Name = instance.RTMResp.Team.Name
+	//Set the logger to the default one if it isn't already set.
+	if instance.log == nil {
+		instance.log = instance.singularity.log
+	}
 
 	//Channels for this Instance.
 	instance.input = make(chan Message, 5)  //TODO Configure Amount
 	instance.output = make(chan Message, 5) //TODO Configure Amount
 	instance.quit = make(chan int)
-	//WebsocketChannel
-	// instance.connection = connection
 
 	//Start Go-Routines for handling the things.
 	if instance.customEventHandler != nil {
@@ -115,44 +119,12 @@ func (instance *SlackInstance) Start() error {
 	return nil
 }
 
-func (singularity *Singularity) addTeam(connection *websocket.Conn, response RTMResp) (*SlackInstance, error) {
-	singularity.Lock()
-	defer singularity.Unlock()
-
-	var instance SlackInstance
-	instance.singularity = singularity //Set reference.
-	instance.RTMResp = response
-	instance.Name = response.Team.Name
-	instance.Configuration = defaultConfig{config: make(map[string]interface{})} //TODO move outside. configs should be configured before a team is started.
-	instance.Commands.handlers = make(map[string]func(Command))
-
-	instance.handlers = NewHandler1()
-	addDefaultHandlers(&instance)
-	//TODO Handlers are implemented here.
-	//TODO Add default handlers for handling Change/Alter type request.
-
-	//Channels for this Instance.
-	instance.input = make(chan Message, 5)  //TODO Configure Amount
-	instance.output = make(chan Message, 5) //TODO Configure Amount
-	instance.quit = make(chan int)
-	//WebsocketChannel
-	instance.connection = connection
-
-	singularity.Teams = append(singularity.Teams, instance)
-
-	//Start Go-Routines for handling the things.
-	go instance.handleChans()
-	go instance.handleWebsocket()
-
-	return nil, nil
-}
-
 //TODO Panic Recovery
 func (instance *SlackInstance) handleChans() {
 	for {
 		select {
-		//<-instance.input reads from (what is assumed to be) slack.
-		case val := <-instance.input:
+
+		case val := <-instance.input: //<-instance.input reads from (what is assumed to be) slack.
 			event, err := val.GetBytes()
 			if err != nil {
 				//TODO Shit.
@@ -165,8 +137,7 @@ func (instance *SlackInstance) handleChans() {
 				instance.handlers.execute(slackType, event, instance)
 			}
 
-			//<-instance.output sends the thing to slack.
-		case val := <-instance.output:
+		case val := <-instance.output: //<-instance.output sends the thing to slack.
 			thingToSend, err := val.GetInterface()
 			bytes, _ := val.GetBytes()
 			fmt.Printf("Sending %+v\n", string(bytes))
@@ -178,7 +149,7 @@ func (instance *SlackInstance) handleChans() {
 				//TODO fuck
 			}
 		case <-instance.quit:
-			return //Die, commie.
+			return
 		}
 	}
 }
@@ -199,6 +170,74 @@ func (instance *SlackInstance) handleWebsocket() {
 			instance.input <- Message{i} //Buffered.
 		}()
 	}
+}
+
+//GetChannelByID returns a channel matching the supplied id, or nil.
+func (instance *SlackInstance) GetChannelByID(id string) *Channel {
+	instance.RTMResp.Lock()
+	defer instance.RTMResp.Unlock()
+
+	for _, channel := range instance.RTMResp.Channels {
+		if channel.ID == id {
+			return &channel
+		}
+	}
+	return nil
+}
+
+//GetChannelByName returns a channel matching the supplied name, or nil.
+func (instance *SlackInstance) GetChannelByName(name string) *Channel {
+	instance.RTMResp.Lock()
+	defer instance.RTMResp.Unlock()
+
+	for _, channel := range instance.RTMResp.Channels {
+		if channel.Name == name {
+			return &channel
+		}
+	}
+	return nil
+}
+
+//GetSelf returns self
+func (instance *SlackInstance) GetSelf() *Self {
+	instance.RTMResp.Lock()
+	defer instance.RTMResp.Unlock()
+
+	return &instance.Self
+}
+
+//GetTeam returns the team object stored in the RTMResp.
+func (instance *SlackInstance) GetTeam() *Team {
+	instance.RTMResp.Lock()
+	defer instance.RTMResp.Unlock()
+
+	return &instance.RTMResp.Team
+}
+
+//GetUserByID returns a user matching the supplied id, or nil.
+func (instance *SlackInstance) GetUserByID(id string) *User {
+	instance.RTMResp.Lock()
+	defer instance.RTMResp.Unlock()
+
+	for _, user := range instance.RTMResp.Users {
+		if user.ID == id {
+			return &user
+		}
+	}
+	return nil
+}
+
+//GetUserByName returns a user matching the supplied name, or nil.
+func (instance *SlackInstance) GetUserByName(name string) *User {
+	instance.RTMResp.Lock()
+	defer instance.RTMResp.Unlock()
+
+	for _, user := range instance.RTMResp.Users {
+		if user.Name == name {
+			return &user
+		}
+	}
+	return nil
 }
 
 //RegisterCommand ...
@@ -225,6 +264,11 @@ func (instance *SlackInstance) RegisterHandlers(handlers map[string][]interface{
 		}
 	}
 	return nil
+}
+
+//SetLogger sets the function that the instance should use for logging.
+func (instance *SlackInstance) SetLogger(logger func(level int, message string, i ...interface{})) {
+	instance.log = logger
 }
 
 //SetHTTPTransport allows you to set a transport to use when communicate with Slack.

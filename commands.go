@@ -12,7 +12,15 @@ import (
 // handlers is a map holding all CommandHandlers
 type CommandHandler struct {
 	sync.Mutex
+	prefix   string
 	handlers map[string]func(Command)
+}
+
+func (commandHandler *CommandHandler) setPrefix(prefix string) {
+	commandHandler.Lock()
+	defer commandHandler.Unlock()
+
+	commandHandler.prefix = prefix
 }
 
 //NewCommandHandler returns a new command handler
@@ -38,7 +46,7 @@ func (commandHandler *CommandHandler) execute(command Command) error {
 		}
 	}()
 	defer commandHandler.Unlock()
-
+	command.Command = strings.Replace(command.Command, commandHandler.prefix, "", 1)
 	function, ok := commandHandler.handlers[command.Command]
 	if !ok {
 		//TODO return error.
@@ -51,16 +59,21 @@ func (commandHandler *CommandHandler) execute(command Command) error {
 
 // IsCommand check if we have a handler for this command
 func (commandHandler *CommandHandler) IsCommand(command string) bool {
+	if command == "" {
+		return false
+	}
 	commandHandler.Lock()
 	defer commandHandler.Unlock()
-	fmt.Println(commandHandler.handlers)
+	if !strings.HasPrefix(command, commandHandler.prefix) {
+		return false
+	}
+	command = strings.Replace(command, commandHandler.prefix, "", 1)
 	_, ok := commandHandler.handlers[strings.ToLower(command)]
 	fmt.Println(ok)
 	return ok
 }
 
 func (commandHandler *CommandHandler) registerCommand(command string, function func(Command)) error {
-
 	commandHandler.Lock()
 	defer commandHandler.Unlock()
 

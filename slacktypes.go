@@ -1,6 +1,9 @@
 package singularity
 
+import "sync"
+
 type RTMResp struct {
+	sync.Mutex
 	OK                      bool        `json:"ok"`
 	URL                     string      `json:"url"`
 	Self                    Self        `json:"self"`

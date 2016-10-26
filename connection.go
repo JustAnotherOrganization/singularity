@@ -2,7 +2,6 @@ package singularity
 
 import (
 	"errors"
-	"net/http"
 
 	"golang.org/x/net/websocket"
 )
@@ -12,21 +11,21 @@ const (
 	SlackAPI = "slack.com/api/"
 )
 
-func (singularity *Singularity) ConnectToTeam(token string) (*SlackInstance, error) {
-	helper := HTTPHelper{Client: &http.Client{}, Transport: "https://"}
-	var response RTMResp
-	_, err := helper.post("rtm.start", &response, "token", token)
-	if err != nil {
-		return nil, err
-	}
-
-	//Connect to websocket.
-	conn, err := singularity.startWebsocketStream(response.URL)
-	if err != nil {
-		return nil, err
-	}
-	return singularity.addTeam(conn, response)
-}
+// func (singularity *Singularity) ConnectToTeam(token string) (*SlackInstance, error) {
+// 	helper := HTTPHelper{Client: &http.Client{}, Transport: "https://"}
+// 	var response RTMResp
+// 	_, err := helper.post("rtm.start", &response, "token", token)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+//
+// 	//Connect to websocket.
+// 	conn, err := singularity.startWebsocketStream(response.URL)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return singularity.addTeam(conn, response)
+// }
 
 func (singularity *Singularity) startWebsocketStream(url string) (*websocket.Conn, error) {
 	conn, err := websocket.Dial(url, "", "http://api.slack.com") //TODO Don't hard code here.

@@ -1,7 +1,6 @@
 package singularity
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/JustAnotherOrganization/singularity/slacktypes"
@@ -16,21 +15,10 @@ These are automatically loaded to help handle the singularity instance and keep 
 // - Pass instance?
 //
 
-func testCommandHandler(command Command) {
-	fmt.Println(command)
-	message := slacktypes.Message{}
-	message.Text = "This is a test!"
-	message.User = command.Instance.Self.ID
-	message.Channel = command.Channel.Name
-	message.Type = "message"
-	command.Instance.output <- Message{Body: message}
-}
-
 //Load is used to load the default handlers.
 func addDefaultHandlers(instance *SlackInstance) {
 	instance.RegisterHandler("message", MessageHandler)
 	instance.RegisterHandler("message", HandleCommands)
-	instance.Commands.registerCommand(".test", testCommandHandler)
 }
 
 // MessageHandler - if this is a message and we have a handler, handle it
@@ -49,7 +37,7 @@ func HandleCommands(message slacktypes.Message, instance *SlackInstance) {
 				cmd := cmds[0]
 				if instance.Commands.IsCommand(cmd) {
 					cmds = cmds[1:]
-					c := Command{Command: cmd, Args: cmds, Instance: instance, Channel: Channel{Name: message.Channel}}
+					c := Command{Command: cmd, Args: cmds, Instance: instance, User: *instance.GetUserByID(message.User), Team: *instance.GetTeam(), Channel: *instance.GetChannelByID(message.Channel)}
 					instance.Commands.execute(c)
 				}
 			}
