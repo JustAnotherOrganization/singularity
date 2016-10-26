@@ -41,7 +41,7 @@ func setCommmandPrefix(command Command) {
 		command.Instance.output <- Message{Body: message}
 	}
 
-	command.Instance.Commands.prefix = command.Args[0]
+	command.Instance.Commands.setPrefix(command.Args[0])
 
 	message := slacktypes.Message{}
 	message.Text = "set the prefix to " + command.Args[0]

@@ -39,21 +39,27 @@ type Command struct {
 }
 
 func (commandHandler *CommandHandler) execute(command Command) error {
-	commandHandler.Lock()
 	defer func() {
 		if err := recover(); err != nil {
 			//TODO handle error.
 		}
 	}()
-	defer commandHandler.Unlock()
 	command.Command = strings.Replace(command.Command, commandHandler.prefix, "", 1)
-	function, ok := commandHandler.handlers[command.Command]
-	if !ok {
-		//TODO return error.
+	function := commandHandler.getCommand(command.Command)
+
+	if function != nil {
+		(*function)(command)
 	}
 
-	function(command)
+	return nil
+}
 
+func (commandHandler *CommandHandler) getCommand(command string) *func(Command) {
+	commandHandler.Lock()
+	defer commandHandler.Unlock()
+	if function, ok := commandHandler.handlers[command]; ok {
+		return &function
+	}
 	return nil
 }
 
