@@ -57,7 +57,7 @@ func (singularity *Singularity) NewTeam(Token string) *SlackInstance {
 	defer singularity.Unlock()
 	instance := &SlackInstance{token: Token, singularity: singularity}
 	//Configuration
-	instance.Configuration = defaultConfig{config: make(map[string]interface{})} //TODO move outside. configs should be configured before a team is started.
+	instance.Configuration = &defaultConfig{config: make(map[string]interface{})} //TODO move outside. configs should be configured before a team is started.
 	//defaulthandlers
 	instance.Commands = NewCommandHandler()
 	instance.Commands.setPrefix(".")
