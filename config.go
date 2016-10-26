@@ -11,12 +11,12 @@ type Configuration interface {
 }
 
 type defaultConfig struct {
-	*sync.Mutex
+	sync.Mutex
 	config map[string]interface{}
 }
 
 //GetBool returns the bool value of key, and defaults to false if it can't find key.
-func (config defaultConfig) GetBool(key string) bool {
+func (config *defaultConfig) GetBool(key string) bool {
 	if val1, ok := config.config[key]; ok {
 		if val2, ok := val1.(bool); ok {
 			return val2
@@ -26,7 +26,7 @@ func (config defaultConfig) GetBool(key string) bool {
 }
 
 //CheckBool returns the bool value of key, and whether or not it actually found key.
-func (config defaultConfig) CheckBool(key string) (bool, bool) {
+func (config *defaultConfig) CheckBool(key string) (bool, bool) {
 	if val1, ok := config.config[key]; ok {
 		if val2, ok := val1.(bool); ok {
 			return val2, true
@@ -36,7 +36,7 @@ func (config defaultConfig) CheckBool(key string) (bool, bool) {
 }
 
 //GetString returns the bool value of key, and defaults to false if it can't find key.
-func (config defaultConfig) GetString(key string) string {
+func (config *defaultConfig) GetString(key string) string {
 	if val1, ok := config.config[key]; ok {
 		if val2, ok := val1.(string); ok {
 			return val2
@@ -46,7 +46,7 @@ func (config defaultConfig) GetString(key string) string {
 }
 
 //CheckString returns the bool value of key, and whether or not it actually found key.
-func (config defaultConfig) CheckString(key string) (string, bool) {
+func (config *defaultConfig) CheckString(key string) (string, bool) {
 	if val1, ok := config.config[key]; ok {
 		if val2, ok := val1.(string); ok {
 			return val2, true
