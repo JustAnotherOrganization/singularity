@@ -11,7 +11,7 @@ type Configuration interface {
 }
 
 type defaultConfig struct {
-	*sync.Mutex
+	sync.Mutex
 	config map[string]interface{}
 }
 
