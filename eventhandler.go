@@ -55,8 +55,11 @@ func (handler *EventAPIHandler) execute(key string, body []byte, instance *Slack
 	for _, function := range handler.handlerList.handlers[key] {
 		if func() bool {
 			defer func() {
-				if err := recover(); err != nil {
-					fmt.Printf("Recovered from Panic: %v\n", err) //TODO Better Error Handling.
+				if err1 := recover(); err1 != nil {
+					fmt.Printf("Recovered from Panic: %v\n", err1) //TODO Better Error Handling.
+					if err != nil {
+						//err = err1?
+					}
 				}
 			}()
 			param0 := reflect.TypeOf(function).In(0) //Should be Param 0.

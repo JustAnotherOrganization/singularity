@@ -1,19 +1,11 @@
 package singularity
 
-import (
-	"strings"
-
-	"github.com/JustAnotherOrganization/singularity/slacktypes"
-)
+import "strings"
 
 /*
 Default Handlers.
 These are automatically loaded to help handle the singularity instance and keep the data up to date.
 */
-
-// TODO List
-// - Pass instance?
-//
 
 //Load is used to load the default handlers.
 func addDefaultHandlers(instance *SlackInstance) {
@@ -22,16 +14,16 @@ func addDefaultHandlers(instance *SlackInstance) {
 }
 
 // MessageHandler - if this is a message and we have a handler, handle it
-func MessageHandler(message slacktypes.Message, instance *SlackInstance) {
+func MessageHandler(message Message, instance *SlackInstance) {
 	//message_deleted Subtype
 	if message.SubType != "message_deleted" {
 	}
 }
 
 // HandleCommands - if this is a command and we have a handler, handle it
-func HandleCommands(message slacktypes.Message, instance *SlackInstance) {
+func HandleCommands(message Message, instance *SlackInstance) {
 	if message.SubType != "message_deleted" { //If it isn't deleted
-		if message.User != instance.Self.ID { //If it isn't me
+		if message.User != instance.GetSelf().ID { //If it isn't me
 			cmds := strings.Split(message.Text, " ")
 			if len(cmds) > 0 {
 				cmd := cmds[0]

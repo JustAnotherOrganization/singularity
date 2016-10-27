@@ -2,6 +2,8 @@ package singularity
 
 import "sync"
 
+//RTMResp is the response given by slack when we authenticate.
+//TODO Create functions to retrieve each field.
 type RTMResp struct {
 	sync.Mutex
 	OK                      bool        `json:"ok"`
@@ -23,6 +25,7 @@ type RTMResp struct {
 	CacheTsVersion          string      `json:"cache_ts_version"`
 }
 
+//Bot represents a bot
 type Bot struct {
 	ID      string `json:"id"`
 	Deleted bool   `json:"deleted"`
@@ -30,11 +33,13 @@ type Bot struct {
 	Icons   Icon   `json:"icons"`
 }
 
+//SubTeamList ...
 type SubTeamList struct {
 	Self []interface{} `json:"self"`
 	All  []interface{} `json:"all"`
 }
 
+//DND ...
 type DND struct {
 	DndEnabled     bool `json:"dnd_enabled"`
 	NextDndStartTs int  `json:"next_dnd_start_ts"`
@@ -42,6 +47,7 @@ type DND struct {
 	SnoozeEnabled  bool `json:"snooze_enabled"`
 }
 
+//Latest ...
 type Latest struct {
 	Type string `json:"type"`
 	User string `json:"user"`
@@ -49,6 +55,7 @@ type Latest struct {
 	Ts   string `json:"ts"`
 }
 
+//IM ...
 type IM struct {
 	ID                 string `json:"id"`
 	User               string `json:"user"`
@@ -63,6 +70,7 @@ type IM struct {
 	IsOpen             bool   `json:"is_open"`
 }
 
+//Channel ...
 type Channel struct {
 	ID                 string   `json:"id"`
 	Name               string   `json:"name"`
@@ -85,18 +93,21 @@ type Channel struct {
 	IsMember           bool     `json:"is_member"`
 }
 
+//Purpose ...
 type Purpose struct {
 	Value   string `json:"value"`
 	Creator string `json:"creator"`
 	LastSet int    `json:"last_set"`
 }
 
+//Topic ...
 type Topic struct {
 	Value   string `json:"value"`
 	Creator string `json:"creator"`
 	LastSet int    `json:"last_set"`
 }
 
+//Team ...
 type Team struct {
 	ID                    string      `json:"id"`
 	Name                  string      `json:"name"`
@@ -111,8 +122,10 @@ type Team struct {
 	OverIntegrationsLimit bool        `json:"over_integrations_limit"`
 }
 
+//Icon ...
 type Icon map[string]string
 
+//Preferences ...
 type Preferences struct {
 	DefaultChannels        []string `json:"default_channels"`
 	InvitesOnlyAdmins      bool     `json:"invites_only_admins"`
@@ -173,10 +186,12 @@ type Preferences struct {
 	InvitesLimit                    bool        `json:"invites_limit"`
 }
 
+//Types ...
 type Types struct {
 	Type []string `json:"type"`
 }
 
+//Self ...
 type Self struct {
 	ID             string   `json:"id"`
 	Name           string   `json:"name"`
@@ -185,6 +200,7 @@ type Self struct {
 	Preferences    SelfPref `json:"prefs"`
 }
 
+//User ...
 type User struct {
 	ID                string      `json:"id"`
 	Name              string      `json:"name"`
@@ -209,6 +225,7 @@ type User struct {
 	Presence          string      `json:"presence"`
 }
 
+//Profile ...
 type Profile struct {
 	FirstName          string      `json:"first_name"`
 	LastName           string      `json:"last_name"`
@@ -227,6 +244,7 @@ type Profile struct {
 	Phone              string      `json:"phone"`
 }
 
+//SelfPref ...
 type SelfPref struct {
 	HighlightWords                     string      `json:"highlight_words"`
 	UserColors                         string      `json:"user_colors"`
@@ -387,4 +405,14 @@ type SelfPref struct {
 	OverloadedMessageEnabled           bool        `json:"overloaded_message_enabled"`
 	A11YFontSize                       string      `json:"a11y_font_size"`
 	A11YAnimations                     bool        `json:"a11y_animations"`
+}
+
+//Message ...
+type Message struct {
+	Type      string `json:"type"`
+	Channel   string `json:"channel"`
+	User      string `json:"user"`
+	Text      string `json:"text"`
+	TimeStamp string `json:"ts"`
+	SubType   string `json:"subtype"`
 }
