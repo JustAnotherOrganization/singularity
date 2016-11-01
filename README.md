@@ -8,12 +8,32 @@ As of writing this...
 ``` Go
 package main
 
-import "github.com/JustAnotherOrganization/singularity"
+import (
+	"fmt"
+
+	"github.com/JustAnotherOrganization/singularity"
+)
 
 func main() {
 	s := singularity.NewSingularity()
 
-	s.ConnectToTeam("mySlackToken")
+	team := s.NewTeam("xoxb-slackToken")
+
+	//Example of registering an event handler
+	team.RegisterHandler("message", func(message singularity.Message, team *singularity.SlackInstance) {
+		if message.User != "" {
+			user := team.GetUserByID(message.User)
+			if message.SubType != "message_deleted" { //If it isn't deleted.
+				fmt.Printf("%v said %v\n", user.Name, message.Text)
+			} else {
+				fmt.Printf("%v deleted %v\n", user.Name, message.Text)
+			}
+		}
+	})
+
+	if err := team.Start(); err != nil {
+		panic(err)
+	}
 
 	s.WaitForShutdown()
 }
