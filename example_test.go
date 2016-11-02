@@ -1,4 +1,4 @@
-package singularity_main
+package singularity_test
 
 import (
 	"fmt"
