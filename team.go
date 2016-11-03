@@ -19,7 +19,7 @@ type SlackInstance struct {
 	//Handlers
 	Commands               *CommandHandler //TODO unexport
 	handlers               *EventAPIHandler
-	customEventHandler     func()
+	customEventHandler     func(input chan ChanMessage, output chan ChanMessage)
 	customCommandHandler   func()
 	customWebsocketHandler func()
 	log                    func(level int, message string, i ...interface{})
@@ -30,8 +30,8 @@ type SlackInstance struct {
 	//Token
 	token string
 
-	input  chan tMessage //input represents what comes from slack
-	output chan tMessage //output goes to slack
+	input  chan ChanMessage //input represents what comes from slack
+	output chan ChanMessage //output goes to slack
 	quit   chan int
 
 	//Configuration
@@ -58,12 +58,13 @@ func (singularity *Singularity) NewTeam(Token string) *SlackInstance {
 	instance := &SlackInstance{token: Token, singularity: singularity}
 	//Configuration
 	instance.Configuration = &defaultConfig{config: make(map[string]interface{})} //TODO move outside. configs should be configured before a team is started.
-	//defaulthandlers
+	//defaulthandlers //TODO Move so that
 	instance.Commands = NewCommandHandler()
 	instance.Commands.setPrefix(".")
 	addDefaultCommands(instance)
 	instance.handlers = NewHandler1()
 	addDefaultHandlers(instance)
+
 	singularity.Teams = append(singularity.Teams, *instance)
 	return instance
 }
@@ -99,13 +100,13 @@ func (instance *SlackInstance) Start() error {
 	}
 
 	//Channels for this Instance.
-	instance.input = make(chan tMessage, 5)  //TODO Configure Amount
-	instance.output = make(chan tMessage, 5) //TODO Configure Amount
+	instance.input = make(chan ChanMessage, 5)  //TODO Configure Amount
+	instance.output = make(chan ChanMessage, 5) //TODO Configure Amount
 	instance.quit = make(chan int)
 
 	//Start Go-Routines for handling the things.
 	if instance.customEventHandler != nil {
-		go instance.customEventHandler()
+		go instance.customEventHandler(instance.input, instance.output)
 	} else {
 		go instance.handleChans()
 	}
@@ -167,7 +168,7 @@ func (instance *SlackInstance) handleWebsocket() {
 				//TODO ERROR HANDLING
 				return
 			}
-			instance.input <- tMessage{i} //Buffered.
+			instance.input <- ChanMessage{i} //Buffered.
 		}()
 	}
 }
@@ -270,7 +271,7 @@ func (instance *SlackInstance) RegisterHandlers(handlers map[string][]interface{
 func (instance *SlackInstance) SendMessage(m Message) {
 	m.Type = "message"
 	m.User = instance.GetSelf().ID
-	instance.output <- tMessage{Body: m}
+	instance.output <- ChanMessage{Body: m}
 }
 
 //SetLogger sets the function that the instance should use for logging.

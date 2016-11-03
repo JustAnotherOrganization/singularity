@@ -19,15 +19,15 @@ func (singularity *Singularity) SetLogger(logger func(level int, message string,
 func defaultLogger(level int, message string, i ...interface{}) {
 	prefix := " ["
 	switch level {
-	case ErrDebug:
+	case LogDebug:
 		prefix += "D"
-	case ErrInfo:
+	case LogInfo:
 		prefix += "I"
-	case ErrWarn:
+	case LogWarn:
 		prefix += "W"
-	case ErrError:
+	case LogError:
 		prefix += "E"
-	case ErrCrit:
+	case LogCrit:
 		prefix += "X"
 	default:
 		prefix += "?"
@@ -39,9 +39,9 @@ func defaultLogger(level int, message string, i ...interface{}) {
 
 //Error Constants
 const (
-	ErrDebug = iota
-	ErrInfo
-	ErrWarn
-	ErrError
-	ErrCrit
+	LogDebug = iota
+	LogInfo
+	LogWarn
+	LogError
+	LogCrit
 )

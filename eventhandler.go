@@ -56,7 +56,7 @@ func (handler *EventAPIHandler) execute(key string, body []byte, instance *Slack
 		if func() bool {
 			defer func() {
 				if err1 := recover(); err1 != nil {
-					fmt.Printf("Recovered from Panic: %v\n", err1) //TODO Better Error Handling.
+					fmt.Printf("Recovered from Panic: %v\n", err1) //TODO Better Error Handling. //TODO Remove fmt.
 					if err != nil {
 						//err = err1?
 					}
@@ -66,7 +66,7 @@ func (handler *EventAPIHandler) execute(key string, body []byte, instance *Slack
 			value := reflect.New(param0).Interface()
 			err = json.Unmarshal(body, &value)
 			if err != nil {
-				fmt.Printf("Error: %v\n", err) //TODO Better Error Handling.
+				fmt.Printf("Error: %v\n", err) //TODO Better Error Handling. //TODO Remove fmt.
 				return false
 			}
 			reflect.ValueOf(function).Call([]reflect.Value{reflect.ValueOf(value).Elem(), reflect.ValueOf(instance)})
