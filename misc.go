@@ -24,6 +24,7 @@ func getFunctionParameters(function string) []string {
 //WARNING Not safe.
 func preParseString(key string, body []byte) string {
 	var buffer []byte
+	level := 0
 	qO := false   //quoteOpen
 	eonf := false //end on next flush
 	escaped := false
@@ -47,9 +48,13 @@ func preParseString(key string, body []byte) string {
 			} else {
 				escaped = false
 			}
-		case '{', '[', ':': // Level handling.
+		case '{':
+			level++
+		case '}':
+			level--
+		case '[', ':': // Level handling.
 			//Ignore.
-		case ',', '}', ']':
+		case ',', ']':
 			if eonf && !qO {
 				return ""
 			}
@@ -60,7 +65,10 @@ func preParseString(key string, body []byte) string {
 				// Ignore?
 				escaped = false
 			} else if qO {
-				buffer = append(buffer, body[ii])
+				if level == 1 {
+
+					buffer = append(buffer, body[ii])
+				}
 			}
 		}
 	}
