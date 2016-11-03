@@ -66,7 +66,8 @@ func (handler *EventAPIHandler) execute(key string, body []byte, instance *Slack
 			value := reflect.New(param0).Interface()
 			err = json.Unmarshal(body, &value)
 			if err != nil {
-				fmt.Printf("Error: %v\n", err) //TODO Better Error Handling. //TODO Remove fmt.
+				fmt.Printf("Error Executing: %v\n", err) //TODO Better Error Handling. //TODO Remove fmt.
+				fmt.Printf("Body: %v\n", string(body))
 				return false
 			}
 			reflect.ValueOf(function).Call([]reflect.Value{reflect.ValueOf(value).Elem(), reflect.ValueOf(instance)})

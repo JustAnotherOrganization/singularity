@@ -11,6 +11,9 @@ These are automatically loaded to help handle the singularity instance and keep 
 func addDefaultHandlers(instance *SlackInstance) {
 	instance.RegisterHandler("message", MessageHandler)
 	instance.RegisterHandler("message", HandleCommands)
+
+	instance.RegisterHandler("bot_added", handleBotAddedEvent)
+	instance.RegisterHandler("bot_changed", handleBotChangedEvent)
 }
 
 // MessageHandler - if this is a message and we have a handler, handle it
@@ -33,6 +36,47 @@ func HandleCommands(message Message, instance *SlackInstance) {
 					instance.Commands.execute(c)
 				}
 			}
+		}
+	}
+}
+
+// handleBotAddedEvent handles when a bot_added event happens. TODO discuss exportation
+/*{
+    "type": "bot_added",
+    "bot": {
+        "id": "B024BE7LH",
+        "name": "hugbot",
+        "icons": {
+            "image_48": "https:\/\/slack.com\/path\/to\/hugbot_48.png"
+        }
+    }
+}*/
+func handleBotAddedEvent(botAdded struct {
+	Bot Bot `json:"bot"`
+}, instance *SlackInstance) {
+	instance.rtmResp.Lock()
+	defer instance.rtmResp.Unlock()
+	instance.rtmResp.Bots = append(instance.rtmResp.Bots, botAdded.Bot)
+}
+
+/*{
+    "type": "bot_changed",
+    "bot": {
+        "id": "B024BE7LH",
+        "name": "hugbot",
+        "icons": {
+            "image_48": "https:\/\/slack.com\/path\/to\/hugbot_48.png"
+        }
+    }
+}*/
+func handleBotChangedEvent(botChanged struct {
+	Bot Bot `json:"bot"`
+}, instance *SlackInstance) {
+	instance.rtmResp.Lock()
+	defer instance.rtmResp.Unlock()
+	for i := 0; i < len(instance.rtmResp.Bots); i++ {
+		if instance.rtmResp.Bots[i].ID == botChanged.Bot.ID {
+			instance.rtmResp.Bots[i] = botChanged.Bot
 		}
 	}
 }

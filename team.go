@@ -137,7 +137,7 @@ func (instance *SlackInstance) handleChans() {
 			fmt.Printf("Type: %v\n", slackType)
 			if slackType != "" {
 				instance.handlers.execute(slackType, event, instance)
-			}
+			} // TODO handle empty types.
 
 		case val := <-instance.output: //<-instance.output sends the thing to slack.
 			thingToSend, err := val.GetInterface()
