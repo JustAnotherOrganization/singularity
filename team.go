@@ -132,7 +132,6 @@ func (instance *SlackInstance) handleChans() {
 				break outOfSelect
 			}
 
-			fmt.Println(string(event))
 			slackType := preParseString("type", event)
 			fmt.Printf("Type: %v\n", slackType)
 			if slackType != "" {
