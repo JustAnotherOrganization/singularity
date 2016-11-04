@@ -2,7 +2,6 @@ package singularity
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"golang.org/x/net/websocket"
@@ -129,25 +128,25 @@ func (instance *SlackInstance) handleChans() {
 		case val := <-instance.input: //<-instance.input reads from (what is assumed to be) slack.
 			event, err := val.GetBytes()
 			if err != nil {
-				//TODO Shit.
+				instance.log(LogError, "Failed to get bytes from instance.input: %v", err) //TODO Better error message
 				break outOfSelect
 			}
 
 			slackType := preParseString("type", event)
-			fmt.Printf("Type: %v\n", slackType)
 			if slackType != "" {
+				instance.log(LogDebug, "Found Type: %v", slackType)
 				instance.handlers.execute(slackType, event, instance)
 			} // TODO handle empty types.
 
 		case val := <-instance.output: //<-instance.output sends the thing to slack.
 			thingToSend, err := val.GetInterface()
 			if err != nil {
-				//TODO Fuck.
+				instance.log(LogError, "Failed to get the interface from instance.output: %v", err) //TODO Better error message
 				break outOfSelect
 			}
 			err = websocket.JSON.Send(instance.connection, thingToSend) //SendBodies  :D
 			if err != nil {
-				//TODO fuck
+				instance.log(LogError, "Failed to send bodies through the websocket: %v", err) //TODO Better error message
 			}
 		case <-instance.quit:
 			return
@@ -165,7 +164,7 @@ func (instance *SlackInstance) handleWebsocket() {
 			//defer Recover() //TODO implement panic recovery.
 			err := websocket.JSON.Receive(instance.connection, &i)
 			if err != nil {
-				//TODO ERROR HANDLING
+				instance.log(LogError, "Failed to read from the websocket connection: %v", err) //TODO Better error message
 				return
 			}
 			instance.input <- ChanMessage{i} //Buffered.
@@ -190,7 +189,6 @@ func (instance *SlackInstance) GetChannelByID(id string) *Channel {
 func (instance *SlackInstance) GetChannelByName(name string) *Channel {
 	instance.rtmResp.Lock()
 	defer instance.rtmResp.Unlock()
-
 	for _, channel := range instance.rtmResp.Channels {
 		if channel.Name == name {
 			return &channel
@@ -239,6 +237,11 @@ func (instance *SlackInstance) GetUserByName(name string) *User {
 		}
 	}
 	return nil
+}
+
+// Log uses the stored log function.
+func (instance *SlackInstance) Log(level int, message string, attachments ...interface{}) {
+	instance.log(level, message, attachments...)
 }
 
 //RegisterCommand ...

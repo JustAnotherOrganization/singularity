@@ -1,13 +1,9 @@
 package singularity_test
 
-import (
-	"fmt"
-
-	"github.com/JustAnotherOrganization/singularity"
-)
+import "github.com/JustAnotherOrganization/singularity"
 
 // This example shows the basic usage for deploying a bot using singularity.
-func Example_main() {
+func Example_use() {
 	s := singularity.NewSingularity()
 
 	team := s.NewTeam("xoxb-slackToken")
@@ -17,9 +13,9 @@ func Example_main() {
 		if message.User != "" {
 			user := team.GetUserByID(message.User)
 			if message.SubType != "message_deleted" { //If it isn't deleted.
-				fmt.Printf("%v said %v\n", user.Name, message.Text)
+				team.Log(singularity.LogInfo, "%v said %v", user.Name, message.Text)
 			} else {
-				fmt.Printf("%v deleted %v\n", user.Name, message.Text)
+				team.Log(singularity.LogInfo, "%v deleted %v", user.Name, message.Text)
 			}
 		}
 	})
