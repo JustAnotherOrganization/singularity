@@ -11,8 +11,9 @@ import (
 // handlers is a map holding all CommandHandlers
 type CommandHandler struct {
 	sync.Mutex
-	prefix   string
-	handlers map[string]func(Command)
+	caseSensitive bool
+	prefix        string
+	handlers      map[string]func(Command)
 }
 
 func (commandHandler *CommandHandler) setPrefix(prefix string) {
@@ -56,7 +57,7 @@ func (commandHandler *CommandHandler) execute(command Command) error {
 func (commandHandler *CommandHandler) getCommand(command string) *func(Command) {
 	commandHandler.Lock()
 	defer commandHandler.Unlock()
-	if function, ok := commandHandler.handlers[command]; ok {
+	if function, ok := commandHandler.handlers[commandHandler.toLower(command)]; ok {
 		return &function
 	}
 	return nil
@@ -73,7 +74,7 @@ func (commandHandler *CommandHandler) IsCommand(command string) bool {
 		return false
 	}
 	command = strings.Replace(command, commandHandler.prefix, "", 1)
-	_, ok := commandHandler.handlers[strings.ToLower(command)]
+	_, ok := commandHandler.handlers[commandHandler.toLower(command)]
 	return ok
 }
 
@@ -85,6 +86,13 @@ func (commandHandler *CommandHandler) registerCommand(command string, function f
 		return errors.New("Command already registered!") //TODO Maybe replace?
 	}
 
-	commandHandler.handlers[strings.ToLower(command)] = function
+	commandHandler.handlers[commandHandler.toLower(command)] = function
 	return nil
+}
+
+func (commandHandler *CommandHandler) toLower(s string) string {
+	if !commandHandler.caseSensitive {
+		s = strings.ToLower(s)
+	}
+	return s
 }
