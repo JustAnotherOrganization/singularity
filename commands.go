@@ -2,7 +2,6 @@ package singularity
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 	"sync"
 )
@@ -75,7 +74,6 @@ func (commandHandler *CommandHandler) IsCommand(command string) bool {
 	}
 	command = strings.Replace(command, commandHandler.prefix, "", 1)
 	_, ok := commandHandler.handlers[strings.ToLower(command)]
-	fmt.Println(ok)
 	return ok
 }
 
@@ -88,6 +86,5 @@ func (commandHandler *CommandHandler) registerCommand(command string, function f
 	}
 
 	commandHandler.handlers[strings.ToLower(command)] = function
-	fmt.Println(commandHandler.handlers)
 	return nil
 }
