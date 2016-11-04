@@ -18,7 +18,7 @@ func Example_basic() {
 }
 
 // This example shows how to register a basic handler.
-func Example_register_handler() {
+func Example_registerhandler() {
 	team.RegisterHandler("message", func(message singularity.Message, team *singularity.SlackInstance) {
 		if message.SubType != "message_deleted" && message.User != "" {
 			team.Log(singularity.LogInfo, "%v said %v", team.GetUserByID(message.User).Name, message.Text)
@@ -27,7 +27,7 @@ func Example_register_handler() {
 }
 
 // This example shows how to register a basic command.
-func Example_register_command() {
+func Example_registercommand() {
 	team.RegisterCommand("ping", func(command singularity.Command) {
 		command.Instance.SendMessage(singularity.Message{Text: "Pong!", Channel: command.Channel.ID})
 	})
