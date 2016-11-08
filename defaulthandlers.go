@@ -25,7 +25,7 @@ func MessageHandler(message Message, instance *SlackInstance) {
 
 // HandleCommands - if this is a command and we have a handler, handle it
 func HandleCommands(message Message, instance *SlackInstance) {
-	if message.SubType != "message_deleted" { //If it isn't deleted
+	if message.SubType == "" {
 		if message.User != instance.GetSelf().ID { //If it isn't me
 			cmds := strings.Split(message.Text, " ")
 			if len(cmds) > 0 {
