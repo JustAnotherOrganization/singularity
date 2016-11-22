@@ -409,10 +409,37 @@ type SelfPref struct {
 
 //Message ...
 type Message struct {
-	Type      string `json:"type"`
-	Channel   string `json:"channel"`
-	User      string `json:"user"`
-	Text      string `json:"text"`
-	TimeStamp string `json:"ts"`
-	SubType   string `json:"subtype"`
+	Type        string       `json:"type"`
+	Channel     string       `json:"channel"`
+	User        string       `json:"user"`
+	Text        string       `json:"text"`
+	TimeStamp   string       `json:"ts"`
+	SubType     string       `json:"subtype"`
+	Attachments []Attachment `json:"attachments"`
+}
+
+//Attachment ...
+type Attachment struct {
+	Fallback   string            `json:"fallback"`
+	Color      string            `json:"color"`
+	Pretext    string            `json:"pretext"`
+	AuthorName string            `json:"author_name"`
+	AuthorLink string            `json:"author_link"`
+	AuthorIcon string            `json:"author_icon"`
+	Title      string            `json:"title"`
+	TitleLink  string            `json:"title_link"`
+	Text       string            `json:"text"`
+	Fields     []AttachmentField `json:"fields"`
+	ImageURL   string            `json:"image_url"`
+	ThumbURL   string            `json:"thumb_url"`
+	Footer     string            `json:"footer"`
+	FooterIcon string            `json:"footer_icon"`
+	Ts         int               `json:"ts"`
+}
+
+//AttachmentField ...
+type AttachmentField struct {
+	Title string `json:"title"`
+	Value string `json:"value"`
+	Short bool   `json:"short"`
 }
